@@ -12,9 +12,10 @@ logging.getLogger("yolov5").setLevel(logging.WARNING)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--weights', default='./models/best0907_2.pt', type=str)
+# parser.add_argument('--weights', default='./models/yolov8n.pt', type=str)
 parser.add_argument('--source', default=0, type=str)
 parser.add_argument('--device', type=int, default=0)
-parser.add_argument('--img', nargs='+', type=int, default=640, help='[train, test] image sizes')
+parser.add_argument('--img', nargs='+', type=int, default=480, help='[train, test] image sizes')
 parser.add_argument('--conf', type=float, default=0.5, help='object confidence threshold')
 parser.add_argument('--iou', type=float, default=0.45, help='IOU threshold for NMS')
 arg = parser.parse_args()
@@ -50,7 +51,8 @@ def detect_objects(image, model):
                             device=0,
                             conf=arg.conf,
                             stream=True,
-                            iou=arg.iou)
+                            iou=arg.iou
+                            )
     
     
     # annotated_frame = results[0].plot()
@@ -140,14 +142,17 @@ if __name__ == '__main__':
     got.initialize("192.168.50.45") 
     got.mecanum_stop()
     got.read_distance_data(21) #40~60
+    
 
-    cap = cv2.VideoCapture("rtsp://192.168.50.45:8554/unicast") 
+    # cap = cv2.VideoCapture("rtsp://192.168.50.45:8554/unicast") 
+    cap = cv2.VideoCapture("rtsp://192.168.50.45:8554/cam") 
     # cap = cv2.VideoCapture(0) 
-    frame_interval = 2  # Set the processing interval frames.
+    frame_interval = 3  # Set the processing interval frames.
     frame_count = 0
     disappear_count = 0
     turn_pid_controller = PIDController(0,0,0.1)  # PID object for turn 
     move_pid_controller = PIDController(1,0,0.1)  # PID object for move 
+
     while True:
         ret, frame = cap.read()  # read frame       
         if ret:            
@@ -198,7 +203,8 @@ if __name__ == '__main__':
             # 'q' quit
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-    
+        else:
+            print(ret)
     cap.release()  
     cv2.destroyAllWindows()  
                 
