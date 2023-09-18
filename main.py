@@ -5,10 +5,22 @@ from ultralytics import YOLO
 from ugot import ugot
 import argparse
 import logging
+import queue
+import threading
 
-logging.getLogger("yolov8").setLevel(logging.WARNING)
-
-logging.getLogger("yolov5").setLevel(logging.WARNING)
+# Function to read frames and put them in the queue
+def read_frames(video_path, frame_queue):
+    cap = cv2.VideoCapture(video_path)
+    
+    while cap.isOpened():
+        success, frame = cap.read()
+        
+        if success:
+            frame_queue.put(frame)
+        else:
+            break
+    
+    cap.release()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--weights', default='./models/best0907_2.pt', type=str)
@@ -145,7 +157,13 @@ if __name__ == '__main__':
     got.read_distance_data(21) #40~60
     
 
-    cap = cv2.VideoCapture("rtsp://192.168.50.45:8554/unicast") 
+    # Start the thread to read frames and put them in the queue
+    source = "rtsp://192.168.50.45:8554/unicast"
+    frame_queue = queue.Queue()
+    thread = threading.Thread(target=read_frames, args=(source, frame_queue))
+    thread.start()
+    
+    # cap = cv2.VideoCapture("rtsp://192.168.50.45:8554/unicast") 
     # cap = cv2.VideoCapture("rtsp://192.168.50.45:8554/cam") 
     # cap = cv2.VideoCapture(0) 
     frame_interval = 3  # Set the processing interval frames.
@@ -155,8 +173,11 @@ if __name__ == '__main__':
     move_pid_controller = PIDController(1,0,0.1)  # PID object for move 
 
     while True:
-        ret, frame = cap.read()  # read frame       
+        # ret, frame = cap.read()  # read frame  
+        ret = True     
         if ret:            
+            # Get the latest frame from the queue
+            frame = frame_queue.get()
             boxes, confidences, class_names = detect_objects(frame, model)  # detect
             if len(boxes) > 0:
                 disappear_count = 0
