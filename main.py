@@ -51,7 +51,8 @@ def detect_objects(image, model):
                             device=0,
                             conf=arg.conf,
                             stream=True,
-                            iou=arg.iou
+                            iou=arg.iou,
+                            classes=[6]
                             )
     
     
@@ -144,8 +145,8 @@ if __name__ == '__main__':
     got.read_distance_data(21) #40~60
     
 
-    # cap = cv2.VideoCapture("rtsp://192.168.50.45:8554/unicast") 
-    cap = cv2.VideoCapture("rtsp://192.168.50.45:8554/cam") 
+    cap = cv2.VideoCapture("rtsp://192.168.50.45:8554/unicast") 
+    # cap = cv2.VideoCapture("rtsp://192.168.50.45:8554/cam") 
     # cap = cv2.VideoCapture(0) 
     frame_interval = 3  # Set the processing interval frames.
     frame_count = 0
